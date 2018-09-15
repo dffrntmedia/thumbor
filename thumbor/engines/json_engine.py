@@ -144,7 +144,9 @@ class JSONEngine(BaseEngine):
                 "target": {
                     "width": target_width,
                     "height": target_height
-                }
+                },
+                # TODO(max): Insert here real image primary color
+                "primaryColor": "rgb(123,123,123)"
             }
         }
 
