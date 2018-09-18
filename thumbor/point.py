@@ -65,3 +65,13 @@ class FocalPoint(object):
         return 'FocalPoint(x: %d, y: %d, width: %d, height: %d, weight: %d, origin: %s)' % (
             self.x, self.y, self.width, self.height, self.weight, self.origin
         )
+
+class PrimaryColorPoint(FocalPoint):
+    def __init__(self, x, y, primary_color, height=1, width=1, weight=1.0, origin="primary_color"):
+        super(PrimaryColorPoint, self).__init__(x, y, height, width, weight, origin)
+        self.primary_color = primary_color
+
+    def to_dict(self):
+        dict = super(PrimaryColorPoint, self).to_dict()
+        dict['primaryColor'] = self.primary_color
+        return dict
