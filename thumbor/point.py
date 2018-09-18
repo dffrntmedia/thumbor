@@ -75,3 +75,16 @@ class PrimaryColorPoint(FocalPoint):
         dict = super(PrimaryColorPoint, self).to_dict()
         dict['primaryColor'] = self.primary_color
         return dict
+
+    @classmethod
+    def from_dict(cls, values):
+        print('test')
+        return cls(
+            x=float(values['x']),
+            y=float(values['y']),
+            weight=float(values['z']),
+            width=float(values.get('width', 1)),
+            height=float(values.get('height', 1)),
+            origin=values.get('origin', 'alignment'),
+            primary_color=values['primaryColor']
+        )
