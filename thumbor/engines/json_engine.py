@@ -132,33 +132,6 @@ class JSONEngine(BaseEngine):
             self.operations.append({'type': 'auto_png_to_jpg_conversion'})
 
     def read(self, extension, quality):
-        image_data = self.engine.image_data_as_rgb()
-        color_type, color_string = image_data
-
-        # TODO(max): Refactor calculating of primary color
-        # TODO(max): Add to config flag if we need to calculate it
-
-        step = len(color_type)
-
-        colors = [color_string[i:i+step] for i in range(0, len(color_string), step)]
-
-        colors_dict = {}
-
-        for color in colors:
-            if not color in colors_dict:
-                colors_dict[color] = 0
-            colors_dict[color] += 1
-
-        primary_color = None
-        max_color_count = 0
-
-        for key, val in colors_dict.items():
-            if val > max_color_count:
-                max_color_count = val
-                primary_color = key
-
-        primary_color_str = color_type.lower() + '(' + (', '.join([str(struct.unpack('@B', a)[0]) for a in primary_color])) + ')'
-
         target_width, target_height = self.get_target_dimensions()
         thumbor_json = {
             "thumbor": {
@@ -172,8 +145,7 @@ class JSONEngine(BaseEngine):
                 "target": {
                     "width": target_width,
                     "height": target_height
-                },
-                "primaryColor": primary_color_str
+                }
             }
         }
 
