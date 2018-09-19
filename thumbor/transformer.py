@@ -11,7 +11,7 @@
 import math
 import sys
 
-from thumbor.point import FocalPoint
+from thumbor.point import FocalPoint, PrimaryColorPoint
 from thumbor.utils import logger
 import tornado.gen as gen
 
@@ -181,7 +181,9 @@ class Transformer(object):
 
     def after_smart_detect(self, focal_points=[], points_from_storage=False):
         for point in focal_points:
-            self.context.request.focal_points.append(FocalPoint.from_dict(point))
+            self.context.request.focal_points.append(
+                PrimaryColorPoint.from_dict(point) if unicode('primaryColor', 'UTF-8') in point else FocalPoint.from_dict(point)
+            )
 
         if self.context.request.focal_points and self.context.modules.storage and not points_from_storage:
             storage = self.context.modules.storage

@@ -9,6 +9,7 @@
 # Copyright (c) 2011 globo.com thumbor@googlegroups.com
 
 import json
+import struct
 
 from thumbor.engines import BaseEngine
 
