@@ -4,59 +4,36 @@
 import struct
 import math
 
+import numpy as np
+
 from thumbor.detectors import BaseDetector
 from thumbor.point import PrimaryColorPoint
-from thumbor.utils import logger
 
 class Detector(BaseDetector):
 
     # such implementation will conflict with other detectors
 
     def detect(self, callback):
-        self.context.modules.engine.resize(self.context.request.width, self.context.request.height)
+        # resize image to optimize calculating of average color by reducing points count
+        if self.context.request.width and self.context.request.height:
+            self.context.modules.engine.resize(self.context.request.width, self.context.request.height)
 
         image_data = self.context.modules.engine.image_data_as_rgb()
         color_type, color_string = image_data
 
         step = len(color_type)
 
-        primary_color_str = None
-
         try:
-            colors = []
-
             colors = [color_string[i:i+step] for i in range(0, len(color_string), step)]
 
-            # colors_dict = {}
+            # converting to numbers from hex strings
+            number_colors = [[struct.unpack('@B', color_component)[0] for color_component in color] for color in colors]
 
-            numb_colors = [[struct.unpack('@B', component)[0] for component in color] for color in colors]
+            avg_color_component_list = np.matrix(number_colors).mean(axis=0).tolist()[0]
 
-            points_count = len(numb_colors)
+            number_colors = [str(int(math.ceil(color_component))) for color_component in avg_color_component_list]
 
-            numb_colors = zip(*numb_colors)
-
-            numb_colors = [sum(list) for list in numb_colors]
-
-            numb_colors = [str(int(math.ceil(a / points_count))) for a in numb_colors]
-
-            print(numb_colors)
-
-            # for color in colors:
-            #     if not color in colors_dict:
-            #         colors_dict[color] = 0
-            #     colors_dict[color] += 1
-
-            # primary_color = None
-            # max_color_count = 0
-
-            # for key, val in colors_dict.items():
-            #     if val > max_color_count:
-            #         max_color_count = val
-            #         primary_color = key
-
-            # primary_color_str = color_type.lower() + '(' + (', '.join([str(struct.unpack('@B', a)[0]) for a in primary_color])) + ')'
-
-            primary_color_str = color_type.lower() + '(' + (', '.join(numb_colors)) + ')'
+            primary_color_str = '{}({})'.format(color_type.lower(), ', '.join(number_colors))
         except:
             primary_color_str = 'rgb(255, 255, 255, 255)'
 

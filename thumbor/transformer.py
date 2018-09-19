@@ -180,14 +180,10 @@ class Transformer(object):
             detectors[0](self.context, index=0, detectors=detectors).detect(self.after_smart_detect)
 
     def after_smart_detect(self, focal_points=[], points_from_storage=False):
-        print(focal_points)
-
         for point in focal_points:
             self.context.request.focal_points.append(
                 PrimaryColorPoint.from_dict(point) if unicode('primaryColor', 'UTF-8') in point else FocalPoint.from_dict(point)
             )
-
-        print([type(a) for a in self.context.request.focal_points])
 
         if self.context.request.focal_points and self.context.modules.storage and not points_from_storage:
             storage = self.context.modules.storage

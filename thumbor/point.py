@@ -78,7 +78,6 @@ class PrimaryColorPoint(FocalPoint):
 
     @classmethod
     def from_dict(cls, values):
-        print('test')
         return cls(
             x=float(values['x']),
             y=float(values['y']),
