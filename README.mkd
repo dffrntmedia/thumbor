@@ -38,3 +38,19 @@ You can see thumbor in action at http://thumborize.me/
 
 
 Join the chat at https://gitter.im/thumbor/thumbor
+
+# dffrntlab part
+
+## How to run locally
+
+Before running we need to specify configuration file in `make run` as `@thumbor -l debug -d --conf=./thumbor/thumbor.conf`.
+
+Run via:
+```
+pip install .
+make run
+```
+
+_!!!when you changed something in project you need to reinstall application via `pip install .`_
+
+In this configuration `./thumbor/thumbor.conf` file you can specify detector in `DETECTORS` (e.g.: primary color detector -> `'thumbor.detectors.primary_color_detector'`).
