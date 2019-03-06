@@ -23,7 +23,7 @@ class Detector(BaseDetector):
             # print(sys.getsizeof(colors))
             colors = resized_image.getcolors(width * height)
 
-            c = 0
+            c = 0 # count
             r = 0
             g = 0
             b = 0
