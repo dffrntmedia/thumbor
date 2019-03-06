@@ -335,6 +335,12 @@ class Engine(BaseEngine):
             self.image = converted_image
         return converted_image.mode, converted_image.tobytes()
 
+    def get_rgb_image(self):
+        converted_image = self.image
+        if converted_image.mode != 'RGB':
+            converted_image = converted_image.convert('RGB')
+        return converted_image
+
     def convert_to_grayscale(self, update_image=True, with_alpha=True):
         if 'A' in self.image.mode and with_alpha:
             image = self.image.convert('LA')

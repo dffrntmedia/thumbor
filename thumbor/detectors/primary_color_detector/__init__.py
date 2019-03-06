@@ -10,32 +10,37 @@ from thumbor.detectors import BaseDetector
 from thumbor.point import PrimaryColorPoint
 
 class Detector(BaseDetector):
-
-    # such implementation will conflict with other detectors
-
     def detect(self, callback):
-        # resize image to optimize calculating of average color by reducing points count
-        if self.context.request.width and self.context.request.height:
-            self.context.modules.engine.resize(self.context.request.width, self.context.request.height)
-
-        image_data = self.context.modules.engine.image_data_as_rgb()
-        color_type, color_string = image_data
-
-        step = len(color_type)
-
         try:
-            colors = [color_string[i:i+step] for i in range(0, len(color_string), step)]
+            image = self.context.modules.engine.get_rgb_image()
 
-            # converting to numbers from hex strings
-            number_colors = [[struct.unpack('@B', color_component)[0] for color_component in color] for color in colors]
+            # resize image to optimize calculating of average color by reducing points count
+            width = 24
+            height = 24
+            resized_image = image.resize((width, height))
 
-            avg_color_component_list = np.matrix(number_colors).mean(axis=0).tolist()[0]
+            # ~5kb
+            # print(sys.getsizeof(colors))
+            colors = resized_image.getcolors(width * height)
 
-            number_colors = [str(int(math.ceil(color_component))) for color_component in avg_color_component_list]
+            c = 0
+            r = 0
+            g = 0
+            b = 0
+            for color in colors:
+                c += color[0]
+                r += color[1][0]
+                g += color[1][1]
+                b += color[1][2]
 
-            primary_color_str = '{}({})'.format(color_type.lower(), ', '.join(number_colors))
-        except:
-            primary_color_str = 'rgb(255, 255, 255, 255)'
+            avg_r = r / c
+            avg_g = g / c
+            avg_b = b / c
+
+            primary_color_str = 'rgb({}, {}, {})'.format(avg_r, avg_g, avg_b)
+        except Exception as e:
+            print('[PrimaryColorDetector]', e)
+            primary_color_str = 'rgb(255, 255, 255)'
 
         self.context.request.focal_points.append(
             PrimaryColorPoint(0, 0, primary_color_str)
