@@ -41,6 +41,21 @@ Join the chat at https://gitter.im/thumbor/thumbor
 
 # dffrntlab part
 
+## Where it is
+
+https://pypi.org/project/dffrntlab-thumbor/
+
+## Push to PyPi
+
+```
+python setup.py sdist bdist_wheel
+# install twine if you don't have
+# pip install twine
+twine upload dist/*
+```
+
+Now we use this profile to push packages: https://pypi.org/user/maximka777/ _(need to register dffrntlab one)_.
+
 ## How to run locally
 
 Before running we need to specify configuration file in `make run` as `@thumbor -l debug -d --conf=./thumbor/thumbor.conf`.
