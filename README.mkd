@@ -41,6 +41,10 @@ Join the chat at https://gitter.im/thumbor/thumbor
 
 # dffrntlab part
 
+## Where it is
+
+https://pypi.org/project/dffrntlab-thumbor/
+
 ## How to run locally
 
 Before running we need to specify configuration file in `make run` as `@thumbor -l debug -d --conf=./thumbor/thumbor.conf`.
