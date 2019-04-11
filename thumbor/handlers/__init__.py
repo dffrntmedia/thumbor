@@ -34,6 +34,8 @@ import thumbor.filters
 
 HTTP_DATE_FMT = "%a, %d %b %Y %H:%M:%S GMT"
 
+SIGNED_PATH_PATTERN = re.compile('^/([0-9A-Za-z_\\-=]{28})/.*$')
+
 try:
     basestring        # Python 2
 except NameError:
@@ -700,6 +702,19 @@ class ContextHandler(BaseHandler):
         finally:
             del exc_info
             logger.error('ERROR: %s' % "".join(msg))
+
+    def _host_ends_with_tld(self):
+        host = self.request.headers.get('Host', '').lower()
+        logger.debug("SECURITY: host: %s", host)
+        return any(host.endswith('.' + tld.lower()) for tld in self.context.config.TOP_LEVEL_DOMAINS)
+
+    def _is_path_signed(self):
+        path = self.request.path
+        logger.debug("SECURITY: path: %s", path)
+        return SIGNED_PATH_PATTERN.match(path)
+
+    def is_external_request(self):
+        return self._host_ends_with_tld()
 
 
 ##
