@@ -24,39 +24,42 @@ from thumbor.engines import BaseEngine
 class ImageUploadHandler(ImageApiHandler):
 
     def post(self):
-        # Check if the image uploaded is a multipart/form-data
-        if self.multipart_form_data():
-            file_data = self.request.files['media'][0]
-            body = file_data['body']
-
-            # Retrieve filename from 'filename' field
-            filename = file_data['filename']
+        if self.is_external_request():
+            self._error(403)
         else:
-            body = self.request.body
+            # Check if the image uploaded is a multipart/form-data
+            if self.multipart_form_data():
+                file_data = self.request.files['media'][0]
+                body = file_data['body']
 
-            # Retrieve filename from 'Slug' header
-            filename = self.request.headers.get('Slug')
+                # Retrieve filename from 'filename' field
+                filename = file_data['filename']
+            else:
+                body = self.request.body
 
-        # Check if the image uploaded is valid
-        if self.validate(body):
+                # Retrieve filename from 'Slug' header
+                filename = self.request.headers.get('Slug')
 
-            # Use the default filename for the uploaded images
-            if not filename:
-                content_type = self.request.headers.get('Content-Type', BaseEngine.get_mimetype(body))
-                extension = mimetypes.guess_extension(content_type.split(';', 1)[0], False)
-                if extension is None:  # Content-Type is unknown, try with body
-                    extension = mimetypes.guess_extension(BaseEngine.get_mimetype(body), False)
-                if extension == '.jpe':
-                    extension = '.jpg'  # Hack because mimetypes return .jpe by default
-                if extension is None:  # Even body is unknown, return an empty string to be contat
-                    extension = ''
-                filename = self.context.config.UPLOAD_DEFAULT_FILENAME + extension
+            # Check if the image uploaded is valid
+            if self.validate(body):
 
-            # Build image id based on a random uuid (32 characters)
-            image_id = str(uuid.uuid4().hex)
-            self.write_file(image_id, body)
-            self.set_status(201)
-            self.set_header('Location', self.location(image_id, filename))
+                # Use the default filename for the uploaded images
+                if not filename:
+                    content_type = self.request.headers.get('Content-Type', BaseEngine.get_mimetype(body))
+                    extension = mimetypes.guess_extension(content_type.split(';', 1)[0], False)
+                    if extension is None:  # Content-Type is unknown, try with body
+                        extension = mimetypes.guess_extension(BaseEngine.get_mimetype(body), False)
+                    if extension == '.jpe':
+                        extension = '.jpg'  # Hack because mimetypes return .jpe by default
+                    if extension is None:  # Even body is unknown, return an empty string to be contat
+                        extension = ''
+                    filename = self.context.config.UPLOAD_DEFAULT_FILENAME + extension
+
+                # Build image id based on a random uuid (32 characters)
+                image_id = str(uuid.uuid4().hex)
+                self.write_file(image_id, body)
+                self.set_status(201)
+                self.set_header('Location', self.location(image_id, filename))
 
     def multipart_form_data(self):
         if 'media' not in self.request.files or not self.request.files['media']:

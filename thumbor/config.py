@@ -379,6 +379,8 @@ Config.define('SQS_QUEUE_KEY_ID', None, 'AWS key id', 'Queued SQS Detector')
 Config.define('SQS_QUEUE_KEY_SECRET', None, 'AWS key secret', 'Queued SQS Detector')
 Config.define('SQS_QUEUE_REGION', 'us-east-1', 'AWS SQS region', 'Queued SQS Detector')
 
+Config.define('TOP_LEVEL_DOMAINS', ['com'], 'Top level domains', 'Access check based on Host header TLD')
+
 # ERROR HANDLING
 Config.define(
     'USE_CUSTOM_ERROR_HANDLING', False,

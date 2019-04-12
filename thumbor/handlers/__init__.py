@@ -701,6 +701,14 @@ class ContextHandler(BaseHandler):
             del exc_info
             logger.error('ERROR: %s' % "".join(msg))
 
+    def _host_ends_with_tld(self):
+        host = self.request.headers.get('Host', '').lower()
+        logger.debug("SECURITY: host: %s", host)
+        return any(host.endswith('.' + tld.lower()) for tld in self.context.config.TOP_LEVEL_DOMAINS)
+
+    def is_external_request(self):
+        return self._host_ends_with_tld()
+
 
 ##
 # Base handler for Image API operations
