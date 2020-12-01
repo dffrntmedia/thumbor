@@ -7,7 +7,8 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/mit-license
 # Copyright (c) 2011 globo.com thumbor@googlegroups.com
-'''This is the main module in thumbor'''
 
-__version__ = "7.1.0"
-__release_date__ = "11-Apr-2019"
+"""This is the main module in thumbor"""
+
+__version__ = "8.0.0"
+__release_date__ = "01-Dec-2020"

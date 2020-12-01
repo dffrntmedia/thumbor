@@ -1,69 +1,44 @@
+.PHONY: docs build perf
+
 OS := $(shell uname)
 
-CONFIG ?= ./thumbor/thumbor.conf
+CONFIG ?= thumbor/thumbor.conf
 
 run: compile_ext
-	@thumbor -l debug -d --conf=$(CONFIG)
+	@thumbor -l debug -d -c $(CONFIG)
+
+run-prod: compile_ext
+	@thumbor -l error -c $(CONFIG)
 
 setup:
-    ifeq ($(OS), Darwin)
-	@$(MAKE) setup_mac
-    else
-	@$(MAKE) setup_ubuntu
-    endif
-	@$(MAKE) setup_python
-
-setup_ubuntu:
-	@sudo apt-get install -y imagemagick webp coreutils gifsicle libvpx? \
-                             libvpx-dev libimage-exiftool-perl libcairo2-dev \
-                             ffmpeg libcurl4-openssl-dev libffi-dev \
-                             python-dev python3-dev
-setup_python:
 	@pip install -e .[tests]
 
-setup_mac:
-	@brew tap brewsci/science
-	@brew update
-	@brew install imagemagick webp opencv coreutils gifsicle libvpx exiftool cairo
-	@brew install ffmpeg
-	@opencv_path=`realpath $$(dirname $$(brew --prefix opencv))/$$(readlink $$(brew --prefix opencv))`; \
-		echo 'Enter in your site-packages directory and run the following lines:';\
-		echo "ln -s $$opencv_path/lib/python2.7/site-packages/cv.py ./";\
-		echo "ln -s $$opencv_path/lib/python2.7/site-packages/cv2.so ./"
-
-compile_ext:
+compile_ext build:
 	@python setup.py build_ext -i
 
-test: compile_ext redis
+test: build redis
 	@$(MAKE) unit coverage
 	@$(MAKE) integration_run
 	@$(MAKE) flake
 	@$(MAKE) kill_redis
 
-ci_test: compile_ext
+ci_test: build 
 	@echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 	@echo "TORNADO IS `python -c 'import tornado; import inspect; print(inspect.getfile(tornado))'`"
 	@echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-	@if [ "$$LINT_TEST" ]; then $(MAKE) flake; elif [ -z "$$INTEGRATION_TEST" ]; then $(MAKE) unit coverage; else $(MAKE) integration_run; fi
+	@if [ "$$LINT_TEST" ]; then $(MAKE) flake; elif [ "$$PERF_TEST" ]; then $(MAKE) long-perf; elif [ -z "$$INTEGRATION_TEST" ]; then $(MAKE) unit coverage; else $(MAKE) integration_run; fi
 
-integration_run:
-	@nosetests -sv integration_tests/
+integration_run integration int:
+	@pytest -sv integration_tests/ -p no:tldr
+
+pint pintegration:
+	@pytest -sv integration_tests/ -p no:tldr -n `nproc`
 
 coverage:
 	@coverage report -m --fail-under=10
 
 unit:
-	@coverage run --branch `which nosetests` -v --with-yanc -s tests/
-
-unit-parallel:
-	@`which nosetests` -v --with-yanc --processes=4 -s tests/
-
-focus:
-	@coverage run --branch `which nosetests` -vv --with-yanc --logging-level=WARNING --with-focus -i -s tests/
-
-
-mysql_test: pretest
-	PYTHONPATH=.:$$PYTHONPATH nosetests -v -s --with-coverage --cover-erase --cover-package=thumbor tests/test_mysql_storage.py
+	@pytest -n `nproc` --cov=thumbor tests/
 
 kill_redis:
 	@-redis-cli -p 6668 -a hey_you shutdown
@@ -72,17 +47,36 @@ redis: kill_redis
 	@redis-server redis.conf ; sleep 1
 	@redis-cli -p 6668 -a hey_you info
 
+format:
+	@black .
+
 flake:
-	@flake8 . --ignore=W801,E501
+	@flake8 --config flake8
+
+pylint:
+	@pylint thumbor tests
 
 setup_docs:
-	pip install -r docs/requirements.txt
+	@pip install -r docs/requirements.txt
 
 build_docs:
-	cd docs && make html
+	@cd docs && make html
 
-docs: setup_docs build_docs
-	python -mwebbrowser file:///`pwd`/docs/_build/html/index.html
+docs:
+	@sphinx-reload --host 0.0.0.0 --port 5555 docs/
+
+perf-start-daemon: perf-stop-daemon
+	@start-stop-daemon -d `pwd`/perf --make-pidfile --background --start --pidfile /tmp/thumbor-perf.pid --exec `which thumbor` -- -l error -c ./thumbor.conf
+
+# if you change this, also change in run.sh
+perf-stop-daemon:
+	@start-stop-daemon -q --stop --oknodo --remove-pidfile --pidfile /tmp/thumbor-perf.pid > /dev/null 2>&1
+
+perf: perf-start-daemon
+	@cd perf && DURATION=10 bash run.sh
+
+long-perf: perf-start-daemon
+	@cd perf && bash run.sh
 
 sample_images:
 	convert -delay 100 -size 100x100 gradient:blue gradient:red -loop 0 integration_tests/imgs/animated.gif
@@ -129,6 +123,7 @@ sample_images:
 	cp tests/fixtures/images/image.jpg tests/fixtures/images/maracujá.jpg
 	cp tests/fixtures/images/image.jpg tests/fixtures/images/alabama1_ap620%C3%A9.jpg
 	cp tests/fixtures/images/image.jpg tests/fixtures/images/alabama1_ap620é.jpg
+	mkdir -p tests/fixtures/result_storages/v2/im/ag/
 	cp tests/fixtures/images/image.jpg tests/fixtures/result_storages/v2/im/ag/image.jpg
 	curl -s https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Katherine_Maher.jpg/800px-Katherine_Maher.jpg -o tests/fixtures/filters/source.jpg
 	convert tests/fixtures/filters/source.jpg -quality 10 tests/fixtures/filters/quality-10%.jpg
