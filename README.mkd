@@ -1,45 +1,16 @@
-# Survey
-
-If you use thumbor, please take 1 minute and answer [this survey](http://t.co/qPBLXJX0mi)? It's only 2 questions and one is multiple choice!!!
-
 [<img src="https://raw.github.com/thumbor/thumbor/master/logo-thumbor.png">](https://github.com/thumbor/thumbor)
-
-[<img src="https://secure.travis-ci.org/thumbor/thumbor.png?branch=master">](http://travis-ci.org/thumbor/thumbor)
-[![Coverage Status](https://coveralls.io/repos/thumbor/thumbor/badge.svg?branch=master&service=github)](https://coveralls.io/github/thumbor/thumbor?branch=master)
-[![Code Climate](https://codeclimate.com/github/thumbor/thumbor/badges/gpa.svg)](https://codeclimate.com/github/thumbor/thumbor)
-[![Codacy Badge](https://api.codacy.com/project/badge/373e13c719c0417f84f0d7d363c9d539)](https://www.codacy.com/app/heynemann/thumbor)
-[![Issue Stats](http://issuestats.com/github/thumbor/thumbor/badge/pr)](http://issuestats.com/github/thumbor/thumbor)
-[![Issue Stats](http://issuestats.com/github/thumbor/thumbor/badge/issue)](http://issuestats.com/github/thumbor/thumbor) 
-[![PyPI](https://img.shields.io/pypi/v/thumbor.svg)](https://pypi.python.org/pypi/thumbor)
-[![PyPI](https://img.shields.io/pypi/dm/thumbor.svg)](https://pypi.python.org/pypi/thumbor)
-[![Bountysource](https://www.bountysource.com/badge/tracker?tracker_id=257692)](https://www.bountysource.com/trackers/257692-globocom-thumbor?utm_source=257692&utm_medium=shield&utm_campaign=TRACKER_BADGE)
 
 thumbor is a smart imaging service. It enables on-demand [crop, resizing and flipping](http://thumbor.readthedocs.io/en/latest/crop_and_resize_algorithms.html) of images.
 
-It also features a VERY smart detection of important points in the image for better cropping and resizing, using state-of-the-art face and feature detection algorithms (more on that in [Detection Algorithms](http://thumbor.readthedocs.io/en/latest/detection_algorithms.html)).
-
-Using thumbor is very easy (after it is running). All you have to do is access it using an URL for an image, like this:
-
-```
-http://<thumbor-server>/300x200/smart/s.glbimg.com/et/bb/f/original/2011/03/24/VN0JiwzmOw0b0lg.jpg
-```
-
-That URL would show an image of the big brother brasil participants in 300x200 using smart crop.
-
-There are several other options to the image URL configuration. You can check them in the [Usage page](http://thumbor.readthedocs.io/en/latest/usage.html).
-
-For more information check [thumbor's
-documentation](http://thumbor.readthedocs.org/en/latest/index.html "thumbor docs").
+For more information check [thumbor's documentation](http://thumbor.readthedocs.org/en/latest/index.html "thumbor docs").
 
 ### Demo
 
 You can see thumbor in action at http://thumborize.me/
 
+---
 
-
-Join the chat at https://gitter.im/thumbor/thumbor
-
-# dffrntlab part
+# DffrntLab
 
 ## Where it is
 
@@ -47,34 +18,56 @@ https://pypi.org/project/dffrntlab-thumbor/
 
 ## Push to PyPi
 
-```
+Update version at `setup.py`.
+
+```sh
 python setup.py sdist bdist_wheel
 # install twine if you don't have
 # pip install twine
 twine upload dist/*
 ```
 
-Now we use this profile to push packages: https://pypi.org/user/maximka777/ _(need to register dffrntlab one)_.
+**TODO:** Now we use this profile to push packages: https://pypi.org/user/maximka777/. We have to register one for DffrntLab.
 
 ## How to run locally
 
 At first we need to install all dependencies via `make setup`.
 
-Before running we need to specify configuration file in `make run` as `@thumbor -l debug -d --conf=./thumbor/thumbor.conf`.
+Default configuration file is `./thumbor/thumbor.conf`. It's specified in `Makefile` at `run` command: `@thumbor -l debug -d --conf=$(CONFIG)`. You can specify another configuration file:
 
-Run via:
+```sh
+make run -e CONFIG=./path/to/your/thumbor.conf
+```
+
+Run:
+```sh
+make run
+# or
+make
+```
+
+After you did some chagnes, you have to install thumbor again:
+
 ```
 pip install .
-make run
 ```
 
-_When you changed something in project you need to reinstall application via `pip install .`_
+### Primary color detection
 
-In this configuration `./thumbor/thumbor.conf` file you can specify detector in `DETECTORS` (e.g.: primary color detector -> `'thumbor.detectors.primary_color_detector'`).
+In configuration file you can use `'thumbor.detectors.primary_color_detector'` in `DETECTORS` section.
 
-Also we can run Thumbor via _(without reinstalling)_: `make`.
+This detector calculates image primary color.
 
-### Filter out external requests
+To get calculated image primary color knock to **meta** endpoint:
 
-To filter out external requests Thumbor check `Host` header if it ends with top level domain. List of TLDs you can specify in `TOP_LEVEL_DOMAINS` configuration field (by default it is `['com']`).
+```
+GET http://host-with-your-thumbor.com/unsafe/meta/path/to/image.jpg
+```
+
+### Filter external requests out
+
+To filter external requests out, Thumbor checks `Host` header. If it ends with top level domain then it is blocked.
+
+List of TLDs you can specify in `TOP_LEVEL_DOMAINS` configuration field (by default it is `['com']`).
+
 This check is applied only for `POST /image` endpoint.

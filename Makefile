@@ -1,7 +1,9 @@
 OS := $(shell uname)
 
+CONFIG ?= ./thumbor/thumbor.conf
+
 run: compile_ext
-	@thumbor -l debug -d
+	@thumbor -l debug -d --conf=$(CONFIG)
 
 setup:
     ifeq ($(OS), Darwin)
@@ -23,7 +25,7 @@ setup_mac:
 	@brew tap brewsci/science
 	@brew update
 	@brew install imagemagick webp opencv coreutils gifsicle libvpx exiftool cairo
-	@brew install ffmpeg --with-libvpx
+	@brew install ffmpeg
 	@opencv_path=`realpath $$(dirname $$(brew --prefix opencv))/$$(readlink $$(brew --prefix opencv))`; \
 		echo 'Enter in your site-packages directory and run the following lines:';\
 		echo "ln -s $$opencv_path/lib/python2.7/site-packages/cv.py ./";\
