@@ -120,7 +120,7 @@ http://<thumbor-server>/300x200/smart/thumbor.readthedocs.io/en/latest/_images/l
             "opencv-python-headless==4.*,>=4.2.0",
             "socketfromfd>=0.2.0",
             "colorful==0.*,>=0.5.4",
-            "tc_prometheus",
+            # "tc_prometheus",
         ],
         extras_require={"tests": TESTS_REQUIREMENTS},
         entry_points={

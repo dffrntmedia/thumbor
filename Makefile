@@ -11,10 +11,10 @@ run-prod: compile_ext
 	@thumbor -l error -c $(CONFIG)
 
 setup:
-	@pip install -e .[tests]
+	@pip3 install -e .[tests]
 
 compile_ext build:
-	@python setup.py build_ext -i
+	@python3 setup.py build_ext -i
 
 test: build redis
 	@$(MAKE) unit coverage
